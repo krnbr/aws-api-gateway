@@ -1,0 +1,8 @@
+config:
+  aws:profile: aws-for-pulumi
+  aws:region: ap-south-1
+  mtls-infra:API_DOMAIN: neuw.api.ap-south-1.in
+  mtls-infra:API_DOMAIN_MTLS: mtls.neuw.api.ap-south-1.in
+  mtls-infra:HOSTED_ZONE_NAME: api.ap-south-1.in
+  mtls-infra:SUB_DOMAIN: neuw
+  mtls-infra:SUB_DOMAIN_MTLS: mtls.neuw
