@@ -1,0 +1,3 @@
+name: functions
+runtime: nodejs
+description: This holds multiple aws lambda functions at a single place
