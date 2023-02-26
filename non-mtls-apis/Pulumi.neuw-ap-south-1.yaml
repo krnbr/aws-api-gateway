@@ -1,8 +1,13 @@
 config:
-  aws:region: ap-south-1
   aws:profile: aws-for-pulumi
+  aws:region: ap-south-1
   non-mtls-apis:API_DOMAIN: neuw.api.ap-south-1.in
   non-mtls-apis:API_DOMAIN_MTLS: mtls.neuw.api.ap-south-1.in
   non-mtls-apis:HOSTED_ZONE_NAME: api.ap-south-1.in
+  non-mtls-apis:JWT:
+    audiences:
+      - test
+      - aws_client
+    issuer: https://neuw-instance_code.zitadel.cloud/
   non-mtls-apis:SUB_DOMAIN: neuw
   non-mtls-apis:SUB_DOMAIN_MTLS: mtls.neuw

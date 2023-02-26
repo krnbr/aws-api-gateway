@@ -2,6 +2,9 @@ import * as pulumi from "@pulumi/pulumi";
 import * as aws from "@pulumi/aws";
 import * as awsx from "@pulumi/awsx";
 import {RecordType} from "@pulumi/aws/route53";
+import {apigatewayv2} from "@pulumi/aws/types/input";
+import AuthorizerJwtConfiguration = apigatewayv2.AuthorizerJwtConfiguration;
+import {JwtConfigData} from "./interfaces";
 
 const config = new pulumi.Config();
 
@@ -15,6 +18,7 @@ const functionsRef = new pulumi.StackReference(`${org}/functions/${stack}`);
 
 const HOSTED_ZONE_NAME = config.require("HOSTED_ZONE_NAME");
 const API_DOMAIN = config.require("API_DOMAIN");
+const configData = config.requireObject<JwtConfigData>("JWT");
 
 const apiZone = aws.route53.getZoneOutput({
     name: HOSTED_ZONE_NAME
@@ -60,6 +64,19 @@ const pingApi = new aws.apigatewayv2.Api(`Ping-Api-Gateway${suffix}`, {
     description: 'An API to test the normal i.e. non-MTLS integration'
 });
 
+const jwtAuthorizerConfig: AuthorizerJwtConfiguration = {
+    issuer: configData.issuer,
+    audiences: configData.audiences
+}
+
+const jwtAuthorizer = new aws.apigatewayv2.Authorizer(`Jwt-Authorizer-${suffix}`, {
+    apiId: pingApi.id,
+    jwtConfiguration: jwtAuthorizerConfig,
+    name: 'zitadel-authorizer',
+    identitySources: ['$request.header.Authorization'],
+    authorizerType: 'JWT'
+})
+
 const pingLambdaPermission = new aws.lambda.Permission(`Lambda-Permission-Ping-Api${suffix}`, {
     action: "lambda:InvokeFunction",
     principal: "apigateway.amazonaws.com",
@@ -79,6 +96,8 @@ const pingIntegration = new aws.apigatewayv2.Integration(`Lambda-Integration-Pin
 
 const pingRoute = new aws.apigatewayv2.Route(`API-Route-Ping${suffix}`, {
     apiId: pingApi.id,
+    authorizerId: jwtAuthorizer.id,
+    authorizationType: 'JWT',
     routeKey: "GET /v1/ping",
     target: pulumi.interpolate`integrations/${pingIntegration.id}`
 });
